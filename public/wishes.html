@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8" />
+  <title>Մաղթանքներ</title>
+  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body class="wishes-page">
+  <div class="wishes-container">
+    <h1>Թող Ձեր մաղթանքները մեզ մնան հիշատակ</h1>
+    <form id="wishForm">
+      <input type="text" id="name" placeholder="Ձեր անունը" required />
+      <textarea id="message" placeholder="Մաղթանքը գրեք այստեղ..." required></textarea>
+      <button type="submit">Ուղարկել մաղթանք</button>
+    </form>
+    <h2 class="wishes-title">Հայտնված Հաղորդագրությունները</h2>
+<ul id="wishes-list" class="wishes-list"></ul>
+
+    <div id="successMsg" class="hidden">Մաղթանքը հաջողությամբ ուղարկվեց ❤️</div>
+
+    <div id="wishesList" class="wishes-list"></div>
+  </div>
+
+  <a href="index.html" class="back-button">⬅️</a>
+
+  <script>
+  const form = document.getElementById('wishForm');
+  const nameInput = document.getElementById('name');
+  const wishInput = document.getElementById('message');
+  const wishesList = document.getElementById('wishes-list');
+
+  // Загружаем все пожелания при загрузке страницы
+  fetch('/api/wishes')
+    .then(res => res.json())
+    .then(data => {
+      data.forEach(wish => {
+        appendWish(wish.name, wish.message || wish.wish);
+      });
+    });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const name = nameInput.value.trim();
+    const message = wishInput.value.trim();
+
+    if (name && message) {
+      fetch('/api/wishes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, message })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("Ошибка при отправке");
+        return res.json ? res.json() : {};
+      })
+      .then(() => {
+        appendWish(name, message);
+        form.reset();
+        document.getElementById('successMsg').classList.remove('hidden');
+      })
+      .catch(err => console.error('Ошибка:', err));
+    }
+  });
+
+  function appendWish(name, message) {
+    const li = document.createElement('li');
+    li.innerHTML = `<strong>${name}:</strong> ${message}`;
+    wishesList.appendChild(li);
+  }
+</script>
+
+
+
+
+</body>
+</html>
